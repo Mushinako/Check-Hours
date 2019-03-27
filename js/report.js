@@ -17,7 +17,7 @@ function submit(e, attempt) {
       };
       // console.log(data);
       let jqxhr = $.ajax({
-        url: 'report.php',
+        url: ip + ':18000/report.php',
         method: 'POST',
         data: data
       });
@@ -70,7 +70,7 @@ $(document).ready(() => {
   byId('stat').value = 'Establishing Connection with Crappy Server...';
 
   let jqxhr = $.ajax({
-    url: 'report.php',
+    url: ip + ':18000/report.php',
     method: 'GET'
   });
   jqxhr.done((data) => {
