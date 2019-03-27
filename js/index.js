@@ -106,6 +106,8 @@ $(document).ready(() => {
   byId('stat').style.color = '#ffff00';
   byId('stat').value = 'Establishing Connection with Crappy Server...';
 
+  console.log(ip + ':18000/time.php');
+
   let jqxhr = $.ajax({
     url: ip + ':18000/time.php',
     method: 'GET'
