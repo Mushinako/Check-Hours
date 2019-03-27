@@ -21,7 +21,7 @@ function search(e, attempt) {
       };
       // console.log(data);
       let jqxhr = $.ajax({
-        url: ip + ':18000/search.php',
+        url: `http://${ip}:18000/search.php`,
         method: 'POST',
         data: data
       });
@@ -106,10 +106,8 @@ $(document).ready(() => {
   byId('stat').style.color = '#ffff00';
   byId('stat').value = 'Establishing Connection with Crappy Server...';
 
-  console.log(ip + ':18000/time.php');
-
   let jqxhr = $.ajax({
-    url: ip + ':18000/time.php',
+    url: `http://${ip}:18000/time.php`,
     method: 'GET'
   });
   jqxhr.done((data) => {
