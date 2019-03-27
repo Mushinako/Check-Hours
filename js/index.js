@@ -1,2 +1,2 @@
 // Bug Reports Welcomed!
-window.onload = () => window.location.replace(ip);
+window.onload = () => window.location.replace(`http://ip`);
