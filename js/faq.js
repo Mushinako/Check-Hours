@@ -1,7 +1,7 @@
 let byId = (e) => document.getElementById(e);
 
 window.onload = () => {
-  byId('home').href = `http://${ip}`;
+  // byId('home').href = `http://${ip}`;
   byId('report').href = `http://${ip}/report.html`;
 
   byId('cheat').href = '#';
