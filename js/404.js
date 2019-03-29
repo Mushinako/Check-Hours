@@ -8,7 +8,7 @@ window.onload = () => {
 
   // Redirection
   setTimeout(() => {
-    window.location.replace('index.html');
+    window.location.replace('/index.html');
   }, 3000);
 }
 
