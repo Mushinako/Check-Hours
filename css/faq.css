@@ -2,7 +2,6 @@ html {
   scroll-behavior: smooth;
 }
 
-nav ul a,
 h1,
 h5,
 p {
@@ -17,6 +16,11 @@ a {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: inherit;
+}
+
+nav ul a {
+  color: #fff;
+  text-decoration: none;
 }
 
 tr {
