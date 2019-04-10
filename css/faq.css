@@ -13,18 +13,44 @@ p {
   font-size: 1.2em;
 }
 
-a:link {
-  text-decoration: none;
-}
-
-a:visited {
-  text-decoration: none;
-}
-
-a:hover {
+a {
+  color: inherit;
   text-decoration: underline;
+  text-decoration-color: inherit;
 }
 
-a:active {
-  text-decoration: underline;
+tr {
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+tr.supported {
+  background-color: #1b5e20;
+  color: #b9f6ca;
+}
+
+tr.suspected {
+  background-color: #e65100;
+  color: #ffff8d;
+}
+
+tr.nonono {
+  background-color: #b71c1c;
+  color: #ffaaa0;
+}
+
+tr.tf {
+  background-color: #000;
+  color: #fff;
+}
+
+span.link {
+  color: #80d8ff;
+}
+
+span.q {
+  color: #ff5252;
+}
+
+span.a {
+  color: #00e676;
 }
