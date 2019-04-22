@@ -1,2 +1,5 @@
 // Bug Reports Welcomed!
-window.onload = () => window.location.replace(`http://${ip}`);
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('noscript').style.display = 'none';
+  window.location.replace(`http://${ip}`);
+});

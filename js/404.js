@@ -1,17 +1,3 @@
-window.onload = () => {
-  // Display JavaScript-Related
-  document.getElementById('js').style.display = 'inherit';
-  document.getElementById('no-js').style.display = 'none';
-
-  // Animated 404 by sayafang
-  init();
-
-  // Redirection
-  setTimeout(() => {
-    window.location.replace('/Check-Hours/index.html');
-  }, 3000);
-}
-
 // Animated 404 by sayafang
 function init() {
   // Camera
@@ -72,3 +58,15 @@ function init() {
 
   render();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Display JavaScript-Related
+  document.getElementById('js').style.display = 'inherit';
+  document.getElementById('no-js').style.display = 'none';
+
+  // Animated 404 by sayafang
+  init();
+
+  // Redirection
+  setTimeout(() => window.location.replace('/Check-Hours/index.html'), 3000);
+});
