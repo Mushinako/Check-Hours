@@ -1,8 +1,8 @@
+"use strict";
+
 let byId = (e) => document.getElementById(e);
 
 document.addEventListener('DOMContentLoaded', () => {
-  byId('report').href = `http://${ip}/report.html`;
-
   byId('cheat').href = '#';
   byId('cheat').onclick = () => window.location.href = 'https://youtu.be/dQw4w9WgXcQ?t=43';
 

@@ -1,3 +1,5 @@
+"use strict";
+
 // Animated 404 by sayafang
 function init() {
   // Camera
@@ -68,5 +70,5 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 
   // Redirection
-  setTimeout(() => window.location.replace('/Check-Hours/index.html'), 3000);
+  setTimeout(() => window.location.replace('index.html'), 3000);
 });

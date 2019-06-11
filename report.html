@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Check Your Hours!</title>
-  <meta name="description" content="Check Hours!">
+  <title>Report Issues!</title>
+  <meta name="description" content="Issue Reporting">
   <meta name="author" content="mushinako">
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
@@ -12,7 +12,7 @@
   <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <link type="text/css" rel="stylesheet" href="css/common.css">
-  <link type="text/css" rel="stylesheet" href="css/index.css">
+  <link type="text/css" rel="stylesheet" href="css/report.css">
 
   <!-- Responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,8 +22,8 @@
   <nav class="grey darken-3" role="navigation">
     <div class="nav-wrapper container">
       <ul class="center">
-        <li><a href="#">Home</a></li>
-        <li><a href="report.html">Report Issues</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#">Report Issues</a></li>
         <li><a href="faq.html">FAQ</a></li>
       </ul>
     </div>
@@ -31,7 +31,7 @@
 
   <div class="container">
     <div class="container">
-      <h1 class="header center">Check Your Hours!</h1>
+      <h1 class="header center">Report Issues!</h1>
     </div>
 
     <div class="container" id="noscript">
@@ -40,40 +40,32 @@
 
     <div class="row">
       <div class="col s12">
-        <div class="card-panel purple darken-4">
+        <div class="card-panel blue darken-4">
           <div class="row">
             <form class="col s12" id="input">
               <div class="row">
                 <div class="input-field col s12 m6">
-                  <input placeholder="First Name" id="first_name" type="text" class="validate white-text" autocomplete="off" required>
-                  <label for="first_name">First Name</label>
+                  <input placeholder="Name (Optional)" id="name" type="text" class="validate white-text" autocomplete="off">
+                  <label for="name">Name (Optional)</label>
                 </div>
-                <!-- <div class="input-field col s12 m6">
-                    <input placeholder="Last Name" id="last_name" type="text" class="validate white-text" autocomplete="off" required>
-                    <label for="last_name">Last Name</label>
-                  </div> -->
                 <div class="input-field col s12 m6">
-                  <input placeholder="6-Digit Student ID" id="id" type="text" class="validate white-text" pattern="[0-9]{6}" autocomplete="off" required>
-                  <label for="id">Student ID</label>
-                  <span class="helper-text" data-error="The input is not a 6-digit number"></span>
+                  <input placeholder="Email (Optional)" id="email" type="email" class="validate white-text" autocomplete="off">
+                  <label for="email">Email (Optional)</label>
+                  <span class="helper-text" data-error="The input is not an email address"></span>
+                </div>
+                <div class="input-field col s12">
+                  <input placeholder="Issue" id="issue" type="text" class="validate white-text" required>
+                  <label for="Issue">Issue Encountered</label>
                 </div>
               </div>
             </form>
             <div class="col s12">
-              <button class="btn waves-effect waves-light cyan darken-2 button-center" id="submit" type="submit" name="action" disabled>
+              <button class="btn waves-effect waves-light red darken-2 button-center" id="submit" type="submit" name="action" disabled>
                 Submit<i class="material-icons right">send</i>
               </button>
               <br>
             </div>
             <form class="col s12">
-              <div class="input-field col s12 m6">
-                <input placeholder="Hour in Database (Press Submit)" id="hour" type="number" class="white-text" disabled>
-                <label for="hour">Hour in Database</label>
-              </div>
-              <div class="input-field col s12 m6">
-                <input placeholder="Cost in Database (Press Submit)" id="cost" type="number" class="white-text" disabled>
-                <label for="cost">Cost in Database</label>
-              </div>
               <div class="input-field col s12">
                 <input placeholder="JavaScript is not Enabled! Cannot Talk to the Server!" id="stat" type="text" disabled>
                 <label for="stat">Query Status</label>
@@ -87,7 +79,7 @@
 
   <!-- Scripts -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script type="text/javascript" src="js/index.js" charset="utf-8"></script>
+  <script type="text/javascript" src="js/report.js" charset="utf-8"></script>
   <script type="text/javascript" src="js/ip.js" charset="utf-8"></script>
 </body>
 
