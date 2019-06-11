@@ -1,5 +1,3 @@
-"use strict";
-
 // Bug Reports Welcomed!
 let byId = (e) => document.getElementById(e);
 
@@ -20,7 +18,7 @@ function submit(e, attempt) {
       };
       let xhr = new XMLHttpRequest();
       xhr.timeout = 5000;
-      xhr.open('POST', `https://${ip}/php/report.php`);
+      xhr.open('POST', 'php/report.php');
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onload = () => {
         if (xhr.status = '200') switch (xhr.responseText) {
@@ -75,7 +73,7 @@ function connect() {
 
   let xhr = new XMLHttpRequest();
   xhr.timeout = 5000;
-  xhr.open('GET', `https://${ip}/php/report.php`);
+  xhr.open('GET', 'php/report.php');
   xhr.onload = () => {
     if (xhr.status = '200') {
       byId('stat').style.color = '#00e676';
