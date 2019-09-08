@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Weebly</title>
+</head>
+
+<body>
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link type="text/css" rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <style media="screen">
+        input::placeholder {
+            color: #757575;
+        }
+
+        input[type=text]:not(.browser-default):disabled+label,
+        input[type=text]:not(.browser-default).validate+label,
+        input[type=text]:not(.browser-default):disabled,
+        .input-field label,
+        .input-field span {
+            color: #000;
+        }
+
+        input.invalid[type=text]:not(.browser-default),
+        input.invalid[type=text]:not(.browser-default):focus,
+        input[type=text]:not(.browser-default).invalid~.helper-text[data-error],
+        input[type=text]:not(.browser-default):focus.invalid~.helper-text[data-error],
+        #stat {
+            color: #d50000;
+        }
+
+        .input-field input[type=text].valid {
+            border-bottom: 1px solid #1b5e20;
+            box-shadow: 0 1px 0 0 #1b5e20;
+        }
+
+        .input-field input[type=text].invalid {
+            border-bottom: 1px solid #d50000;
+            box-shadow: 0 1px 0 0 #d50000;
+        }
+
+        .input-field>label {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            font-size: 1.35em;
+        }
+
+        .l0 {
+            display: none !important;
+        }
+
+        .button-center {
+            margin: auto;
+            display: block;
+        }
+
+        .box {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 30px;
+        }
+    </style>
+
+    <div class="row box">
+        <br>
+        <form id="input">
+            <div class="input-field col s12 m4">
+                <input placeholder="Lorem" id="fname" type="text" class="validate" autocomplete="off" required disabled>
+                <label for="fname">First Name</label>
+            </div>
+            <div class="input-field col s12 m4">
+                <input placeholder="Ipsum" id="lname" type="text" class="validate" autocomplete="off" required disabled>
+                <label for="lname">Last Name</label>
+            </div>
+            <div class="input-field col s12 m4">
+                <input placeholder="010123449" id="id" type="text" class="validate" pattern="[0-9]{9}"
+                    autocomplete="off" required disabled>
+                <label for="id">Student ID</label>
+                <span class="helper-text" data-error="The input is not a 9-digit number"></span>
+            </div>
+            <div class="input-field col l0">
+                <input placeholder="Pass" id="pass" type="text" class="validate" pattern=".*" autocomplete="off"
+                    disabled>
+                <label for="pass">Pass</label>
+            </div>
+            <div class="col s12">
+                <button class="btn waves-effect waves-light cyan darken-2 button-center" id="submit" type="submit"
+                    name="action" disabled>
+                    Submit<i class="material-icons right">send</i>
+                </button>
+                <br>
+            </div>
+        </form>
+        <form>
+            <div class="input-field col s12 m4">
+                <input placeholder="(Press Submit)" id="serv" type="text" disabled>
+                <label for="serv">Service Hours</label>
+            </div>
+            <div class="input-field col s12 m4">
+                <input placeholder="(Press Submit)" id="lead" type="text" disabled>
+                <label for="lead">Leadership Hours</label>
+            </div>
+            <div class="input-field col s12 m4">
+                <input placeholder="(Press Submit)" id="fell" type="text" disabled>
+                <label for="fell">Fellowship Hours</label>
+            </div>
+            <div class="input-field col s12">
+                <input placeholder="JavaScript is not Enabled! Cannot Talk to the Server!" id="stat" type="text"
+                    disabled>
+                <label for="stat">Query Status</label>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        // Bug reports welcomed!
+        "use strict";
+
+        // Initialize IP variable
+        var ip;
+
+        /**
+         * Check form existence and validity
+         *
+         * @param  {string[]} ins - List of ID's of inputs
+         * @return {boolean}      - Form validity
+         **/
+        function checkForm(ins) {
+            // Check form existence because who knows...
+            if (!byID('input') || ins.some((val) => !byID(val))) {
+                err('Internal Error! Reloading...');
+                window.location.reload(true);
+                return false;
+            }
+            // Focus on all inputs for better input error texts
+            for (let x of ins)
+                byID(x).focus();
+            byID(ins[ins.length - 2]).blur();
+            // Prompt for invalid input
+            if (!byID('input').checkValidity()) {
+                err('Invalid Input');
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Get and submit data
+         *
+         * @param {string}   fn      - Filename of PHP file to be accessed
+         * @param {Function} load    - Callback for load
+         * @param {string[]} ins     - List of ID's of inputs
+         * @param {number}   attempt - Attempt number
+         * @param {Function} restart - Callback for another attempt
+         **/
+        function submitData(fn, load, ins, attempt, restart) {
+            // Get an object with input ID's as keys and input values as values
+            let data = ins.reduce((acc, cur) => {
+                acc[cur] = byID(cur).value;
+                return acc;
+            }, {});
+            xhr(fn, load, () => {
+                switch (attempt) {
+                    case 0:
+                        war('Connection to Crappy Server Timed Out, 1st Retry...');
+                        break;
+                    case 1:
+                        war('Connection to Crappy Server Timed Out, 2nd Retry...');
+                        break;
+                    default:
+                        err('Connection to Crappy Server Timed Out!');
+                        return;
+                }
+                restart(attempt + 1);
+            }, true, data);
+        }
+
+        /**
+         * Simple XHR
+         *
+         * @param {string}        path    - Path of XHR
+         * @param {Function}      load    - Callback for load
+         * @param {EventListener} timeout - Callback for timeout
+         * @param {boolean}       method  - false for get, true for post
+         * @param {object}        data    - If post, data to be sent
+         **/
+        function xhr(path, load, timeout, method, data = {}) {
+            let xhr = new XMLHttpRequest();
+            // 5-sec timeout
+            xhr.timeout = 5000;
+            xhr.addEventListener('timeout', timeout);
+            // Onload
+            xhr.addEventListener('load', () => load(xhr));
+            if (method) {
+                // Post
+                xhr.open('POST', path);
+                // Response always in JSON
+                xhr.responseType = 'json';
+                // Always submit as URL-encoded
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                // Send in URL-encoded format
+                xhr.send(Object.entries(data).map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join(
+                    '&'));
+            } else {
+                // Get
+                xhr.open('GET', path);
+                // Send
+                xhr.send();
+            }
+        }
+
+        /**
+         * Put text in stat
+         *
+         * @param {string} text  - Text to be put
+         * @param {string} color - Color to change to
+         **/
+        function putInStat(text, color) {
+            let stat = byID('stat');
+            stat.style.color = color;
+            stat.value = text;
+        }
+
+        /**
+         * Too lazy to type document.getElementById again and again
+         *
+         * @param {string} e - ID of the element
+         **/
+        let byID = (e) => document.getElementById(e);
+
+        /**
+         * Success
+         *
+         * @param {string} text - Text to be put
+         **/
+        let suc = (text) => putInStat(text, '#1b5e20');
+
+        /**
+         * Warning
+         *
+         * @param {string} text - Text to be put
+         **/
+        let war = (text) => putInStat(text, '#f57f17');
+
+        /**
+         * Error
+         *
+         * @param {string} text - Text to be put
+         **/
+        let err = (text) => putInStat(text, '#d50000');
+
+        /**
+         * Connection error
+         **/
+        let errCon = () => err('Connection to Crappy Server Timed Out!');
+
+        /**
+         * Search main function
+         *
+         * @param {number} attempt - Attempt number
+         **/
+        function search(attempt = 0) {
+            let ins = ['fname', 'lname', 'id', 'pass'];
+            let outs = ['serv', 'lead', 'fell'];
+            // Empty outputs
+            for (let x of outs)
+                byID(x).value = '';
+            // Stop if invalid form
+            if (!checkForm(ins))
+                return;
+            // Prompt for first attempt
+            if (!attempt) {
+                war('Searching Data on Crappy Server...');
+                for (let x of outs)
+                    byID(x).value = 'Checking...';
+            }
+            submitData(`http://${ip}/php/search.php`, (x) => {
+                if (x.status === 200) {
+                    for (let y of outs)
+                        byID(y).value = '';
+                    switch (x.response['stat']) {
+                        case 1:
+                            err('Name-ID Combination not Found!');
+                            return;
+                        case -2:
+                            err('Request Error!');
+                            return;
+                        case -3:
+                            err('Server is Updating Data, Please Retry in a Few Moments...');
+                            return;
+                        case 0:
+                            for (let y of outs)
+                                byID(y).value = (Math.round(parseFloat(x.response[y]) * 100) / 100).toFixed(2);
+                            suc('Success');
+                            return;
+                    }
+                }
+                err('Internal Error!');
+            }, ins, attempt, search);
+        }
+
+        /**
+         * Get time from server, also test connection
+         *
+         * @param {string} ip - Server IP
+         **/
+        let time = (ip) => xhr(`http://${ip}/php/search.php`, (x) => {
+            if (x.status == 200) {
+                suc('Data Fetched at ' + x.responseText);
+                for (let x of ['submit', 'fname', 'lname', 'id', 'pass'])
+                    byID(x).disabled = false;
+            } else
+                errCon();
+        }, errCon, false);
+
+        // Onload
+        document.addEventListener('DOMContentLoaded', () => {
+            let p = [
+                '  ___________  ____   ___    _______ ______',
+                ' / ___/ __/ / / / /  / _ )  / ___/ //_/  _/',
+                '/ /___\\ \\/ /_/ / /__/ _  | / /__/ ,< _/ /',
+                '\\___/___/\\____/____/____/  \\___/_/|_/___/',
+                '',
+                ' Bug Reports Welcomed!'
+            ];
+            console.log(p.join('\n'));
+            // Connection test indicator
+            war('Testing Connection with Crappy Server...');
+            // Get IP
+            xhr('https://mushinako.github.io/Check-Hours/ip.txt', (x) => {
+                if (x.status !== 200) {
+                    errCon();
+                    return;
+                }
+                ip = x.responseText.trim();
+                // Contact server to test connection
+                time(ip);
+                // Click event
+                byID('submit').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    search();
+                });
+                // Enter key event
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        search();
+                    }
+                });
+                // Focus on first input
+                byID('fname').focus();
+            }, errCon, false)
+        });
+    </script>
+</body>
+
+</html>
