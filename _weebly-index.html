@@ -161,7 +161,7 @@
         function submitData(fn, load, ins, attempt, restart) {
             // Get an object with input ID's as keys and input values as values
             let data = ins.reduce((acc, cur) => {
-                acc[cur] = byID(cur).value;
+                acc[cur] = byID(cur).value.trim().toLowerCase();
                 return acc;
             }, {});
             xhr(fn, load, () => {
