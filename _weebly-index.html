@@ -66,18 +66,18 @@
 
     <div class="row box">
         <br>
-        <form id="input">
+        <form class="col s12" id="input">
             <div class="input-field col s12 m4">
-                <input placeholder="Lorem" id="fname" type="text" class="validate" autocomplete="off" required disabled>
+                <input placeholder="Lorem" id="fname" type="text" class="validate" required disabled>
                 <label for="fname">First Name</label>
             </div>
             <div class="input-field col s12 m4">
-                <input placeholder="Ipsum" id="lname" type="text" class="validate" autocomplete="off" required disabled>
+                <input placeholder="Ipsum" id="lname" type="text" class="validate" required disabled>
                 <label for="lname">Last Name</label>
             </div>
             <div class="input-field col s12 m4">
-                <input placeholder="010123449" id="id" type="text" class="validate" pattern="[0-9]{9}"
-                    autocomplete="off" required disabled>
+                <input placeholder="010123449" id="id" type="text" class="validate" pattern="[0-9]{9}" required
+                    disabled>
                 <label for="id">Student ID</label>
                 <span class="helper-text" data-error="The input is not a 9-digit number"></span>
             </div>
@@ -94,7 +94,7 @@
                 <br>
             </div>
         </form>
-        <form>
+        <form class="col s12">
             <div class="input-field col s12 m4">
                 <input placeholder="(Press Submit)" id="serv" type="text" disabled>
                 <label for="serv">Service Hours</label>
