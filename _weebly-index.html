@@ -130,7 +130,8 @@
          * @param  {string[]} ins - List of ID's of inputs
          * @return {boolean}      - Form validity
          **/
-        function checkForm(ins) {
+        function checkForm() {
+            let ins = ['fname', 'lname', 'id', 'pass'];
             // Check form existence because who knows...
             if (!byID('input') || ins.some((val) => !byID(val))) {
                 err('Internal Error! Reloading...');
@@ -144,6 +145,12 @@
             // Prompt for invalid input
             if (!byID('input').checkValidity()) {
                 err('Invalid Input');
+                return false;
+            }
+            // A valid student ID should be 11 mod 13
+            if (parseInt(byID('id').value) % 13 !== 11) {
+                byID('id').focus();
+                err('You may have mistyped your student ID. Please double check.');
                 return false;
             }
             return true;
@@ -271,7 +278,7 @@
             for (let x of outs)
                 byID(x).value = '';
             // Stop if invalid form
-            if (!checkForm(ins))
+            if (!checkForm())
                 return;
             // Prompt for first attempt
             if (!attempt) {
