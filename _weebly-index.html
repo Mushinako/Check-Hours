@@ -26,10 +26,10 @@
             color: #000;
         }
 
-        input.invalid[type=text]:not(.browser-default),
-        input.invalid[type=text]:not(.browser-default):focus,
+        input[type=text]:not(.browser-default).invalid,
+        input[type=text]:not(.browser-default).invalid:focus,
         input[type=text]:not(.browser-default).invalid~.helper-text[data-error],
-        input[type=text]:not(.browser-default):focus.invalid~.helper-text[data-error],
+        input[type=text]:not(.browser-default).invalid:focus~.helper-text[data-error],
         #stat {
             color: #d50000;
         }
@@ -198,8 +198,8 @@
          **/
         function xhr(path, load, timeout, method, data = {}) {
             let xhr = new XMLHttpRequest();
-            // 5-sec timeout
-            xhr.timeout = 5000;
+            // 10-sec timeout
+            xhr.timeout = 10000;
             xhr.addEventListener('timeout', timeout);
             // Onload
             xhr.addEventListener('load', () => load(xhr));
@@ -305,6 +305,8 @@
                                 byID(y).value = (Math.round(parseFloat(x.response[y]) * 100) / 100).toFixed(2);
                             suc('Success');
                             return;
+                        default:
+                            err(x.response['data']);
                     }
                 }
                 err('Internal Error!');
@@ -316,7 +318,7 @@
          *
          * @param {string} ip - Server IP
          **/
-        let time = (ip) => xhr(`http://${ip}/php/search.php`, (x) => {
+        let time = () => xhr(`http://${ip}/php/search.php`, (x) => {
             if (x.status == 200) {
                 suc('Data Fetched at ' + x.responseText);
                 for (let x of ['submit', 'fname', 'lname', 'id', 'pass'])
@@ -344,9 +346,9 @@
                     errCon();
                     return;
                 }
-                ip = x.responseText.trim();
+                ip = x.responseText.trim() + ':38080';
                 // Contact server to test connection
-                time(ip);
+                time();
                 // Click event
                 byID('submit').addEventListener('click', (e) => {
                     e.preventDefault();
@@ -361,7 +363,7 @@
                 });
                 // Focus on first input
                 byID('fname').focus();
-            }, errCon, false)
+            }, errCon, false);
         });
     </script>
 </body>
