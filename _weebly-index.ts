@@ -1,6 +1,31 @@
 "use strict";
+
+// Load function type
+type loadFunc = (req: Response) => void;
+
+// Response table type
+type resTbl = {
+    date: number | string,
+    event: string,
+    serv: number | null,
+    lead: number | null,
+    fell: number | null
+};
+
+// Response object type
+type resObj = {
+    stat: number,
+    serv: number,
+    lead: number,
+    fell: number,
+    data: resTbl[]
+};
+
+// Dictionary type
+type dict = Record<string, string>;
+
 // Strings
-const str = {
+const str: dict = {
     timeout: 'Connection failure! Please retry in a few moments...',
     testres: 'Ready for query',
     malfunc: 'Webpage malfunction! Reloading...',
@@ -15,67 +40,79 @@ const str = {
     interrr: 'Internal error!',
     testing: 'Looking for server...'
 };
+
 // Initialize IP variable
-var ip;
-const ipUrl = 'https://mushinako.github.io/Check-Hours/ip.txt';
+var ip: string;
+const ipUrl: string = 'https://mushinako.github.io/Check-Hours/ip.txt';
+
 // Date regexes
-const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{2,4}\s*\-\s*\d{1,2}\/\d{1,2}\/\d{2,4}$/;
+const dateRegex: RegExp = /^\d{1,2}\/\d{1,2}\/\d{2,4}\s*\-\s*\d{1,2}\/\d{1,2}\/\d{2,4}$/;
+
 /**
  * Too lazy to type document.getElementbyId again and again
  *
  * @param {string} e - ID of the element
  **/
-const byId = (e) => document.getElementById(e);
+const byId = (e: string): HTMLElement => document.getElementById(e);
+
 /**
  * Map IDs to input elements
  *
  * @param {string[]} ids - IDs of the elements
  **/
-const inputsFromIds = (ids) => ids.map((id) => byId(id));
+const inputsFromIds = (ids: string[]): HTMLInputElement[] => ids.map((id: string): HTMLInputElement => <HTMLInputElement>byId(id));
+
 // Elements
-const tblDiv = byId('data');
-const form = byId('input');
-const submit = byId('submit');
-const ins = inputsFromIds(['fname', 'lname', 'id', 'pass']);
-const outs = inputsFromIds(['serv', 'lead', 'fell']);
+const tblDiv: HTMLDivElement = <HTMLDivElement>byId('data');
+const form: HTMLFormElement = <HTMLFormElement>byId('input');
+const submit: HTMLButtonElement = <HTMLButtonElement>byId('submit');
+const ins: HTMLInputElement[] = inputsFromIds(['fname', 'lname', 'id', 'pass']);
+const outs: HTMLInputElement[] = inputsFromIds(['serv', 'lead', 'fell']);
+
 /**
  * Success
  *
  * @param {string} text - Text to be put
  **/
-const suc = (text) => putInStat(text, '#1b5e20');
+const suc = (text: string): void => putInStat(text, '#1b5e20');
+
 /**
  * Warning
  *
  * @param {string} text - Text to be put
  **/
-const war = (text) => putInStat(text, '#f57f17');
+const war = (text: string): void => putInStat(text, '#f57f17');
+
 /**
  * Error
  *
  * @param {string} text - Text to be put
  **/
-const err = (text) => putInStat(text, '#d50000');
+const err = (text: string): void => putInStat(text, '#d50000');
+
 /**
  * Connection error
  **/
-const errCon = () => err(str['timeout']);
+const errCon = (): void => err(str['timeout']);
+
 /**
  * Format number to 2 digits
  *
  * @param   {number} n - Number to be formatted
  * @returns {string}   - Formatted string
  */
-const numFormat = (n) => (Math.round(n * 100) / 100).toFixed(2);
+const numFormat = (n: number): string => (Math.round(n * 100) / 100).toFixed(2);
+
 /**
  * GET fetch
  *
- * @param   {string}            url - URL to be fetched
+ * @param   {string}            url - URL to be fetched 
  * @returns {Promise<Response>}     - Promise of response
  */
-const getFetch = (url) => fetch(url, {
+const getFetch = (url: string): Promise<Response> => fetch(url, {
     method: 'GET'
 });
+
 /**
  * POST fetch
  *
@@ -83,32 +120,36 @@ const getFetch = (url) => fetch(url, {
  * @param   {dict}              data - Data to send
  * @returns {Promise<Response>}      - Promise of response
  */
-const postFetch = (url, data) => fetch(url, {
+const postFetch = (url: string, data: dict): Promise<Response> => fetch(url, {
     method: 'POST',
     headers: {
         "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
     },
-    body: Object.entries(data).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')
+    body: Object.entries(data).map(
+        ([k, v]: [string, string]): string => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+    ).join('&')
 });
+
 /**
  * Put text in stat
  *
  * @param {string} text  - Text to be put
  * @param {string} color - Color to change to
  **/
-function putInStat(text, color) {
-    let stat = byId('stat');
+function putInStat(text: string, color: string): void {
+    let stat: HTMLInputElement = <HTMLInputElement>byId('stat');
     stat.style.color = color;
     stat.value = text;
 }
+
 /**
  * Check form existence and validity
  *
  * @returns {boolean} - Form validity
  **/
-function checkForm() {
+function checkForm(): boolean {
     // Check form existence because who knows...
-    if (!form || ins.some((e) => !e)) {
+    if (!form || ins.some((e: HTMLInputElement): boolean => !e)) {
         err(str['malfunc']);
         window.location.reload(true);
         return false;
@@ -122,111 +163,111 @@ function checkForm() {
         return false;
     }
     // A valid student ID should be 11 mod 13
-    if (parseInt(byId('id').value) % 13 !== 11) {
-        byId('id').focus();
+    if (parseInt((<HTMLInputElement>byId('id')).value) % 13 !== 11) {
+        (<HTMLInputElement>byId('id')).focus();
         err(str['invstid']);
         return false;
     }
     // Yeah successful
     return true;
 }
+
 /**
  * Get and submit data
  *
  * @param   {string}            fn - Filename of PHP file to be accessed
  * @returns {Promise<Response>}    - Server response promise
  **/
-function submitData(fn) {
+function submitData(fn: string): Promise<Response> {
     // Get an object with input ID's as keys and input values as values
-    let data = ins.reduce((acc, cur) => {
+    let data: dict = ins.reduce((acc: dict, cur: HTMLInputElement): dict => {
         acc[cur.id] = cur.value.trim().toLowerCase();
         return acc;
     }, {});
     // Send request and return promise
     return postFetch(fn, data);
 }
+
 /**
  * Convert Excel date number to date string
  *
  * @param   {number} date - Date number
  * @returns {string}      - Date string in mm/dd/yyyy format
  **/
-function excelDate(date) {
-    let sub;
+function excelDate(date: number): string {
+    let sub: number;
     if (date > 60) {
         // After 1900/02/29
         sub = 25568;
-    }
-    else if (date > 0 && date < 60) {
+    } else if (date > 0 && date < 60) {
         // Before 1900/02/29
         sub = 25567;
-    }
-    else {
+    } else {
         // Invalid date
         return date.toString();
     }
-    let dateObj = new Date((date - sub) * 86400 * 1000);
+    let dateObj: Date = new Date((date - sub) * 86400 * 1000);
     return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
 }
+
 /**
  * Convert Excel date number to date string
  *
  * @param   {string} dateRange - Date range
  * @returns {string}           - Date string in mm/dd/yyyy format
  **/
-function dateRange(dateRange) {
-    let dates = dateRange.replace(/\s/g, '').split('-');
-    let datesFormatted = dates.map((date) => {
-        let dateArr = date.split('/');
+function dateRange(dateRange: string): string {
+    let dates: string[] = dateRange.replace(/\s/g, '').split('-');
+    let datesFormatted: string[] = dates.map((date: string): string => {
+        let dateArr: string[] = date.split('/');
         if (dateArr.length === 3 && dateArr[2].length === 2)
             dateArr[2] = `20${dateArr[2]}`;
         return dateArr.join('/');
     });
     return datesFormatted.join(' - ');
 }
+
 /**
  * Parse response
  *
  * @param {resObj} res - Data response
  **/
-function parseResponse(res) {
+function parseResponse(res: resObj): void {
     // Fill in numbers
     for (let e of outs)
         e.value = numFormat(res[e.id]);
     // Fill in table
-    const data = res.data;
-    const tbl = document.createElement('table');
+    const data: resTbl[] = res.data;
+    const tbl: HTMLTableElement = document.createElement('table');
     // Create header
-    const thead = document.createElement('thead');
-    let tr = document.createElement('tr');
+    const thead: HTMLTableSectionElement = document.createElement('thead');
+    let tr: HTMLTableRowElement = document.createElement('tr');
     for (let head of ['Date', 'Event', 'S', 'L', 'F']) {
-        let th = document.createElement('th');
-        let text = document.createTextNode(head);
+        let th: HTMLTableHeaderCellElement = document.createElement('th');
+        let text: Text = document.createTextNode(head);
         th.appendChild(text);
         tr.appendChild(th);
     }
     thead.appendChild(tr);
     tbl.appendChild(thead);
     // Actual data
-    const tbody = document.createElement('tbody');
+    const tbody: HTMLTableSectionElement = document.createElement('tbody');
     for (let row of data) {
-        let tr = document.createElement('tr');
+        let tr: HTMLTableRowElement = document.createElement('tr');
         // Add date
-        let date;
+        let date: string;
         if (typeof row.date === 'number') {
             // Number date
             date = excelDate(row.date);
-        }
-        else if (dateRegex.test(row.date)) {
+        } else if (dateRegex.test(row.date)) {
             // Date range
             date = dateRange(row.date);
-        }
-        else {
+        } else {
             // Unrecognized
             date = row.date;
         }
-        let td = document.createElement('td');
-        let text = document.createTextNode(date);
+        let td: HTMLTableCellElement = document.createElement('td');
+        let text: Text = document.createTextNode(date);
         td.appendChild(text);
         tr.appendChild(td);
         // Add event name
@@ -250,10 +291,11 @@ function parseResponse(res) {
     // Success indicator
     suc(str['success']);
 }
+
 /**
  * Search main function
  **/
-function search() {
+function search(): void {
     // Empty outputs
     for (let e of outs)
         e.value = '';
@@ -267,14 +309,14 @@ function search() {
     for (let e of outs)
         e.value = str['checkin'];
     // Post search
-    submitData(`http://${ip}/php/search.php`).then((res) => {
+    submitData(`http://${ip}/php/search.php`).then((res: Response): Promise<resObj> => {
         // Check request success
         if (res.status !== 200) {
             err('Internal Error!');
             return;
         }
         return res.json();
-    }).then((data) => {
+    }).then((data: resObj): void => {
         // Clear 'Checking' indicators
         for (let e of outs)
             e.value = '';
@@ -298,11 +340,12 @@ function search() {
         }
     }).catch(errCon);
 }
+
 /**
  * Get time from server, also test connection
  **/
-function time() {
-    getFetch(`http://${ip}/php/search.php`).then((res) => {
+function time(): void {
+    getFetch(`http://${ip}/php/search.php`).then((res: Response): void => {
         // Check request success
         if (res.status !== 200) {
             errCon();
@@ -316,45 +359,47 @@ function time() {
         }
         submit.disabled = false;
         // Click event
-        submit.addEventListener('click', (e) => {
+        submit.addEventListener('click', (e: MouseEvent): void => {
             e.preventDefault();
             search();
         });
         // Enter key event
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', (e: KeyboardEvent): void => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 search();
             }
         });
         // Focus on first input
-        byId('fname').focus();
+        (<HTMLInputElement>byId('fname')).focus();
     }).catch(errCon);
 }
+
 /**
  * Initiations: Get server IP, Test connection and get time, etc.
  **/
-function init() {
+function init(): void {
     // Connection test indicator
     war(str['testing']);
     // Get IP
-    getFetch(ipUrl).then((res) => {
+    getFetch(ipUrl).then((res: Response): Promise<string> => {
         // Check get IP success
         if (res.status !== 200) {
             errCon();
             return;
         }
         return res.text();
-    }).then((text) => {
+    }).then((text: string): void => {
         // Assign server IP
         ip = `${text.trim()}:38080`;
         // Contact server to test connection
         time();
     }).catch(errCon);
 }
+
 // Onload
 document.addEventListener('DOMContentLoaded', () => {
-    let p = [
+    let p: string[] = [
         '  ___________  ____   ___    _______ ______',
         ' / ___/ __/ / / / /  / _ )  / ___/ //_/  _/',
         '/ /___\\ \\/ /_/ / /__/ _  | / /__/ ,< _/ /',

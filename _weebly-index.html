@@ -112,115 +112,106 @@
                     disabled>
                 <label for="stat">Query Status</label>
             </div>
+            <div class="input-field col s12" id="data"></div>
         </form>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
     <script>
-        // Bug reports welcomed!
         "use strict";
-
+        // Strings
+        const str = {
+            timeout: 'Connection failure! Please retry in a few moments...',
+            testres: 'Ready for query',
+            malfunc: 'Webpage malfunction! Reloading...',
+            invinpt: 'Invalid input!',
+            invstid: 'You may have mistyped your student ID. Please double check.',
+            success: 'Success',
+            loading: 'Searching data...',
+            checkin: 'Checking...',
+            notfond: 'Name-ID combination not found!',
+            reqerrr: 'Request error!',
+            updatin: 'Server is updating data. Please retry in a few moments...',
+            interrr: 'Internal error!',
+            testing: 'Looking for server...'
+        };
         // Initialize IP variable
         var ip;
-
+        const ipUrl = 'https://mushinako.github.io/Check-Hours/ip.txt';
+        // Date regexes
+        const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{2,4}\s*\-\s*\d{1,2}\/\d{1,2}\/\d{2,4}$/;
         /**
-         * Check form existence and validity
+         * Too lazy to type document.getElementbyId again and again
          *
-         * @param  {string[]} ins - List of ID's of inputs
-         * @return {boolean}      - Form validity
+         * @param {string} e - ID of the element
          **/
-        function checkForm() {
-            let ins = ['fname', 'lname', 'id', 'pass'];
-            // Check form existence because who knows...
-            if (!byID('input') || ins.some((val) => !byID(val))) {
-                err('Internal Error! Reloading...');
-                window.location.reload(true);
-                return false;
-            }
-            // Focus on all inputs for better input error texts
-            for (let x of ins)
-                byID(x).focus();
-            byID(ins[ins.length - 2]).blur();
-            // Prompt for invalid input
-            if (!byID('input').checkValidity()) {
-                err('Invalid Input');
-                return false;
-            }
-            // A valid student ID should be 11 mod 13
-            if (parseInt(byID('id').value) % 13 !== 11) {
-                byID('id').focus();
-                err('You may have mistyped your student ID. Please double check.');
-                return false;
-            }
-            return true;
-        }
-
+        const byId = (e) => document.getElementById(e);
         /**
-         * Get and submit data
+         * Map IDs to input elements
          *
-         * @param {string}   fn      - Filename of PHP file to be accessed
-         * @param {Function} load    - Callback for load
-         * @param {string[]} ins     - List of ID's of inputs
-         * @param {number}   attempt - Attempt number
-         * @param {Function} restart - Callback for another attempt
+         * @param {string[]} ids - IDs of the elements
          **/
-        function submitData(fn, load, ins, attempt, restart) {
-            // Get an object with input ID's as keys and input values as values
-            let data = ins.reduce((acc, cur) => {
-                acc[cur] = byID(cur).value.trim().toLowerCase();
-                return acc;
-            }, {});
-            xhr(fn, load, () => {
-                switch (attempt) {
-                    case 0:
-                        war('Connection to Crappy Server Timed Out, 1st Retry...');
-                        break;
-                    case 1:
-                        war('Connection to Crappy Server Timed Out, 2nd Retry...');
-                        break;
-                    default:
-                        err('Connection to Crappy Server Timed Out!');
-                        return;
-                }
-                restart(attempt + 1);
-            }, true, data);
-        }
-
+        const inputsFromIds = (ids) => ids.map((id) => byId(id));
+        // Elements
+        const tblDiv = byId('data');
+        const form = byId('input');
+        const submit = byId('submit');
+        const ins = inputsFromIds(['fname', 'lname', 'id', 'pass']);
+        const outs = inputsFromIds(['serv', 'lead', 'fell']);
         /**
-         * Simple XHR
+         * Success
          *
-         * @param {string}        path    - Path of XHR
-         * @param {Function}      load    - Callback for load
-         * @param {EventListener} timeout - Callback for timeout
-         * @param {boolean}       method  - false for get, true for post
-         * @param {object}        data    - If post, data to be sent
+         * @param {string} text - Text to be put
          **/
-        function xhr(path, load, timeout, method, data = {}) {
-            let xhr = new XMLHttpRequest();
-            // 10-sec timeout
-            xhr.timeout = 10000;
-            xhr.addEventListener('timeout', timeout);
-            // Onload
-            xhr.addEventListener('load', () => load(xhr));
-            if (method) {
-                // Post
-                xhr.open('POST', path);
-                // Response always in JSON
-                xhr.responseType = 'json';
-                // Always submit as URL-encoded
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                // Send in URL-encoded format
-                xhr.send(Object.entries(data).map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join(
-                    '&'));
-            } else {
-                // Get
-                xhr.open('GET', path);
-                // Send
-                xhr.send();
-            }
-        }
-
+        const suc = (text) => putInStat(text, '#1b5e20');
+        /**
+         * Warning
+         *
+         * @param {string} text - Text to be put
+         **/
+        const war = (text) => putInStat(text, '#f57f17');
+        /**
+         * Error
+         *
+         * @param {string} text - Text to be put
+         **/
+        const err = (text) => putInStat(text, '#d50000');
+        /**
+         * Connection error
+         **/
+        const errCon = () => err(str['timeout']);
+        /**
+         * Format number to 2 digits
+         *
+         * @param   {number} n - Number to be formatted
+         * @returns {string}   - Formatted string
+         */
+        const numFormat = (n) => (Math.round(n * 100) / 100).toFixed(2);
+        /**
+         * GET fetch
+         *
+         * @param   {string}            url - URL to be fetched
+         * @returns {Promise<Response>}     - Promise of response
+         */
+        const getFetch = (url) => fetch(url, {
+            method: 'GET'
+        });
+        /**
+         * POST fetch
+         *
+         * @param   {string}            url  - URL to send data to
+         * @param   {dict}              data - Data to send
+         * @returns {Promise<Response>}      - Promise of response
+         */
+        const postFetch = (url, data) => fetch(url, {
+            method: 'POST',
+            headers: {
+                "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            body: Object.entries(data).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+                .join('&')
+        });
         /**
          * Put text in stat
          *
@@ -228,129 +219,222 @@
          * @param {string} color - Color to change to
          **/
         function putInStat(text, color) {
-            let stat = byID('stat');
+            let stat = byId('stat');
             stat.style.color = color;
             stat.value = text;
         }
-
         /**
-         * Too lazy to type document.getElementById again and again
+         * Check form existence and validity
          *
-         * @param {string} e - ID of the element
+         * @returns {boolean} - Form validity
          **/
-        let byID = (e) => document.getElementById(e);
-
+        function checkForm() {
+            // Check form existence because who knows...
+            if (!form || ins.some((e) => !e)) {
+                err(str['malfunc']);
+                window.location.reload(true);
+                return false;
+            }
+            // Focus on all inputs for better input error texts
+            for (let e of ins)
+                e.focus();
+            // Prompt for invalid input
+            if (!form.checkValidity()) {
+                err(str['invinpt']);
+                return false;
+            }
+            // A valid student ID should be 11 mod 13
+            if (parseInt(byId('id').value) % 13 !== 11) {
+                byId('id').focus();
+                err(str['invstid']);
+                return false;
+            }
+            // Yeah successful
+            return true;
+        }
         /**
-         * Success
+         * Get and submit data
          *
-         * @param {string} text - Text to be put
+         * @param   {string}            fn - Filename of PHP file to be accessed
+         * @returns {Promise<Response>}    - Server response promise
          **/
-        let suc = (text) => putInStat(text, '#1b5e20');
-
+        function submitData(fn) {
+            // Get an object with input ID's as keys and input values as values
+            let data = ins.reduce((acc, cur) => {
+                acc[cur.id] = cur.value.trim().toLowerCase();
+                return acc;
+            }, {});
+            // Send request and return promise
+            return postFetch(fn, data);
+        }
         /**
-         * Warning
+         * Convert Excel date number to date string
          *
-         * @param {string} text - Text to be put
+         * @param   {number} date - Date number
+         * @returns {string}      - Date string in mm/dd/yyyy format
          **/
-        let war = (text) => putInStat(text, '#f57f17');
-
+        function excelDate(date) {
+            let sub;
+            if (date > 60) {
+                // After 1900/02/29
+                sub = 25568;
+            } else if (date > 0 && date < 60) {
+                // Before 1900/02/29
+                sub = 25567;
+            } else {
+                // Invalid date
+                return date.toString();
+            }
+            let dateObj = new Date((date - sub) * 86400 * 1000);
+            return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+        }
         /**
-         * Error
+         * Convert Excel date number to date string
          *
-         * @param {string} text - Text to be put
+         * @param   {string} dateRange - Date range
+         * @returns {string}           - Date string in mm/dd/yyyy format
          **/
-        let err = (text) => putInStat(text, '#d50000');
-
+        function dateRange(dateRange) {
+            let dates = dateRange.replace(/\s/g, '').split('-');
+            let datesFormatted = dates.map((date) => {
+                let dateArr = date.split('/');
+                if (dateArr.length === 3 && dateArr[2].length === 2)
+                    dateArr[2] = `20${dateArr[2]}`;
+                return dateArr.join('/');
+            });
+            return datesFormatted.join(' - ');
+        }
         /**
-         * Connection error
+         * Parse response
+         *
+         * @param {resObj} res - Data response
          **/
-        let errCon = () => err('Connection to Crappy Server Timed Out!');
-
+        function parseResponse(res) {
+            // Fill in numbers
+            for (let e of outs)
+                e.value = numFormat(res[e.id]);
+            // Fill in table
+            const data = res.data;
+            const tbl = document.createElement('table');
+            // Create header
+            const thead = document.createElement('thead');
+            let tr = document.createElement('tr');
+            for (let head of ['Date', 'Event', 'S', 'L', 'F']) {
+                let th = document.createElement('th');
+                let text = document.createTextNode(head);
+                th.appendChild(text);
+                tr.appendChild(th);
+            }
+            thead.appendChild(tr);
+            tbl.appendChild(thead);
+            // Actual data
+            const tbody = document.createElement('tbody');
+            for (let row of data) {
+                let tr = document.createElement('tr');
+                // Add date
+                let date;
+                if (typeof row.date === 'number') {
+                    // Number date
+                    date = excelDate(row.date);
+                } else if (dateRegex.test(row.date)) {
+                    // Date range
+                    date = dateRange(row.date);
+                } else {
+                    // Unrecognized
+                    date = row.date;
+                }
+                let td = document.createElement('td');
+                let text = document.createTextNode(date);
+                td.appendChild(text);
+                tr.appendChild(td);
+                // Add event name
+                td = document.createElement('td');
+                text = document.createTextNode(row.event);
+                td.appendChild(text);
+                tr.appendChild(td);
+                // Add hours
+                for (let hour of [row.serv, row.lead, row.fell]) {
+                    td = document.createElement('td');
+                    if (hour) {
+                        text = document.createTextNode(numFormat(hour));
+                        td.appendChild(text);
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+            tbl.appendChild(tbody);
+            tblDiv.appendChild(tbl);
+            // Success indicator
+            suc(str['success']);
+        }
         /**
          * Search main function
-         *
-         * @param {number} attempt - Attempt number
          **/
-        function search(attempt = 0) {
-            let ins = ['fname', 'lname', 'id', 'pass'];
-            let outs = ['serv', 'lead', 'fell'];
+        function search() {
             // Empty outputs
-            for (let x of outs)
-                byID(x).value = '';
+            for (let e of outs)
+                e.value = '';
+            while (tblDiv.lastChild)
+                tblDiv.removeChild(tblDiv.lastChild);
             // Stop if invalid form
             if (!checkForm())
                 return;
-            // Prompt for first attempt
-            if (!attempt) {
-                war('Searching Data on Crappy Server...');
-                for (let x of outs)
-                    byID(x).value = 'Checking...';
-            }
-            submitData(`http://${ip}/php/search.php`, (x) => {
-                if (x.status === 200) {
-                    for (let y of outs)
-                        byID(y).value = '';
-                    switch (x.response['stat']) {
-                        case 1:
-                            err('Name-ID Combination not Found!');
-                            return;
-                        case -2:
-                            err('Request Error!');
-                            return;
-                        case -3:
-                            err('Server is Updating Data, Please Retry in a Few Moments...');
-                            return;
-                        case 0:
-                            for (let y of outs)
-                                byID(y).value = (Math.round(parseFloat(x.response[y]) * 100) / 100).toFixed(2);
-                            suc('Success');
-                            return;
-                        default:
-                            err(x.response['data']);
-                    }
+            // Prompt for attempt
+            war(str['loading']);
+            for (let e of outs)
+                e.value = str['checkin'];
+            // Post search
+            submitData(`http://${ip}/php/search.php`).then((res) => {
+                // Check request success
+                if (res.status !== 200) {
+                    err('Internal Error!');
+                    return;
                 }
-                err('Internal Error!');
-            }, ins, attempt, search);
+                return res.json();
+            }).then((data) => {
+                // Clear 'Checking' indicators
+                for (let e of outs)
+                    e.value = '';
+                // Analyze response data
+                switch (data['stat']) {
+                    case -1:
+                        err(str['notfond']);
+                        return;
+                    case -2:
+                        err(str['reqerrr']);
+                        return;
+                    case -3:
+                        err(str['updatin']);
+                        return;
+                    case 0:
+                        parseResponse(data);
+                        return;
+                    default:
+                        err(str['interrr']);
+                        return;
+                }
+            }).catch(errCon);
         }
-
         /**
          * Get time from server, also test connection
-         *
-         * @param {string} ip - Server IP
          **/
-        let time = () => xhr(`http://${ip}/php/search.php`, (x) => {
-            if (x.status == 200) {
-                suc('Data Fetched at ' + x.responseText);
-                for (let x of ['submit', 'fname', 'lname', 'id', 'pass'])
-                    byID(x).disabled = false;
-            } else
-                errCon();
-        }, errCon, false);
-
-        // Onload
-        document.addEventListener('DOMContentLoaded', () => {
-            let p = [
-                '  ___________  ____   ___    _______ ______',
-                ' / ___/ __/ / / / /  / _ )  / ___/ //_/  _/',
-                '/ /___\\ \\/ /_/ / /__/ _  | / /__/ ,< _/ /',
-                '\\___/___/\\____/____/____/  \\___/_/|_/___/',
-                '',
-                ' Bug Reports Welcomed!'
-            ];
-            console.log(p.join('\n'));
-            // Connection test indicator
-            war('Testing Connection with Crappy Server...');
-            // Get IP
-            xhr('https://mushinako.github.io/Check-Hours/ip.txt', (x) => {
-                if (x.status !== 200) {
+        function time() {
+            getFetch(`http://${ip}/php/search.php`).then((res) => {
+                // Check request success
+                if (res.status !== 200) {
                     errCon();
                     return;
                 }
-                ip = x.responseText.trim() + ':38080';
-                // Contact server to test connection
-                time();
+                // Show data
+                // suc(`Data Fetched at ${req.responseText}`);
+                suc(str['testres']);
+                for (let e of ins) {
+                    e.disabled = false;
+                }
+                submit.disabled = false;
                 // Click event
-                byID('submit').addEventListener('click', (e) => {
+                submit.addEventListener('click', (e) => {
                     e.preventDefault();
                     search();
                 });
@@ -362,8 +446,42 @@
                     }
                 });
                 // Focus on first input
-                byID('fname').focus();
-            }, errCon, false);
+                byId('fname').focus();
+            }).catch(errCon);
+        }
+        /**
+         * Initiations: Get server IP, Test connection and get time, etc.
+         **/
+        function init() {
+            // Connection test indicator
+            war(str['testing']);
+            // Get IP
+            getFetch(ipUrl).then((res) => {
+                // Check get IP success
+                if (res.status !== 200) {
+                    errCon();
+                    return;
+                }
+                return res.text();
+            }).then((text) => {
+                // Assign server IP
+                ip = `${text.trim()}:38080`;
+                // Contact server to test connection
+                time();
+            }).catch(errCon);
+        }
+        // Onload
+        document.addEventListener('DOMContentLoaded', () => {
+            let p = [
+                '  ___________  ____   ___    _______ ______',
+                ' / ___/ __/ / / / /  / _ )  / ___/ //_/  _/',
+                '/ /___\\ \\/ /_/ / /__/ _  | / /__/ ,< _/ /',
+                '\\___/___/\\____/____/____/  \\___/_/|_/___/',
+                '',
+                ' Bug Reports Welcomed!'
+            ];
+            console.log(p.join('\n'));
+            init();
         });
     </script>
 </body>
