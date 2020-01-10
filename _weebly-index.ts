@@ -27,18 +27,18 @@ type dict = Record<string, string>;
 // Strings
 const str: dict = {
     timeout: 'Connection failure! Please retry in a few moments...',
-    testres: 'Ready for query',
+    testres: 'Data updated at ',
     malfunc: 'Webpage malfunction! Reloading...',
     invinpt: 'Invalid input!',
     invstid: 'You may have mistyped your student ID. Please double check.',
     success: 'Success',
-    loading: 'Searching data...',
-    checkin: 'Checking...',
+    loading: 'Searching data, please wait...',
+    checkin: 'Checking, please wait...',
     notfond: 'Name-ID combination not found!',
     reqerrr: 'Request error!',
     updatin: 'Server is updating data. Please retry in a few moments...',
     interrr: 'Internal error!',
-    testing: 'Looking for server...'
+    testing: 'Looking for server, please wait...'
 };
 
 // Initialize IP variable
@@ -353,25 +353,27 @@ function time(): void {
         }
         // Show data
         // suc(`Data Fetched at ${req.responseText}`);
-        suc(str['testres']);
-        for (let e of ins) {
-            e.disabled = false;
-        }
-        submit.disabled = false;
-        // Click event
-        submit.addEventListener('click', (e: MouseEvent): void => {
-            e.preventDefault();
-            search();
-        });
-        // Enter key event
-        document.addEventListener('keydown', (e: KeyboardEvent): void => {
-            if (e.key === 'Enter') {
+        res.text().then((text: string): void => {
+            suc(str['testres'] + text);
+            for (let e of ins) {
+                e.disabled = false;
+            }
+            submit.disabled = false;
+            // Click event
+            submit.addEventListener('click', (e: MouseEvent): void => {
                 e.preventDefault();
                 search();
-            }
+            });
+            // Enter key event
+            document.addEventListener('keydown', (e: KeyboardEvent): void => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    search();
+                }
+            });
+            // Focus on first input
+            (<HTMLInputElement>byId('fname')).focus();
         });
-        // Focus on first input
-        (<HTMLInputElement>byId('fname')).focus();
     }).catch(errCon);
 }
 
