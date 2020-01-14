@@ -8,16 +8,17 @@ const str = {
     invstid: 'You may have mistyped your student ID. Please double check.',
     success: 'Success',
     loading: 'Searching data, please wait...',
-    checkin: 'Checking, please wait...',
+    checkin: 'Checking...',
     notfond: 'Name-ID combination not found!',
     reqerrr: 'Request error!',
     updatin: 'Server is updating data. Please retry in a few moments...',
     interrr: 'Internal error!',
     testing: 'Looking for server, please wait...'
 };
-// Initialize IP variable
+// Initialize IP variables
 var ip;
 const ipUrl = 'https://mushinako.github.io/Check-Hours/ip.txt';
+var phpUrl;
 // Date regexes
 const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{2,4}\s*\-\s*\d{1,2}\/\d{1,2}\/\d{2,4}$/;
 /**
@@ -36,6 +37,7 @@ const inputsFromIds = (ids) => ids.map((id) => byId(id));
 const tblDiv = byId('data');
 const form = byId('input');
 const submit = byId('submit');
+const stat = byId('stat');
 const ins = inputsFromIds(['fname', 'lname', 'id', 'pass']);
 const outs = inputsFromIds(['serv', 'lead', 'fell']);
 /**
@@ -97,7 +99,6 @@ const postFetch = (url, data) => fetch(url, {
  * @param {string} color - Color to change to
  **/
 function putInStat(text, color) {
-    let stat = byId('stat');
     stat.style.color = color;
     stat.value = text;
 }
@@ -138,7 +139,7 @@ function checkForm() {
  **/
 function submitData(fn) {
     // Get an object with input ID's as keys and input values as values
-    let data = ins.reduce((acc, cur) => {
+    const data = ins.reduce((acc, cur) => {
         acc[cur.id] = cur.value.trim().toLowerCase();
         return acc;
     }, {});
@@ -156,12 +157,10 @@ function excelDate(date) {
     if (date > 60) {
         // After 1900/02/29
         sub = 25568;
-    }
-    else if (date > 0 && date < 60) {
+    } else if (date > 0 && date < 60) {
         // Before 1900/02/29
         sub = 25567;
-    }
-    else {
+    } else {
         // Invalid date
         return date.toString();
     }
@@ -169,10 +168,10 @@ function excelDate(date) {
     return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
 }
 /**
- * Convert Excel date number to date string
+ * Clean date range string
  *
  * @param   {string} dateRange - Date range
- * @returns {string}           - Date string in mm/dd/yyyy format
+ * @returns {string}           - Date range string in mm/dd/yyyy format
  **/
 function dateRange(dateRange) {
     let dates = dateRange.replace(/\s/g, '').split('-');
@@ -216,12 +215,10 @@ function parseResponse(res) {
         if (typeof row.date === 'number') {
             // Number date
             date = excelDate(row.date);
-        }
-        else if (dateRegex.test(row.date)) {
+        } else if (dateRegex.test(row.date)) {
             // Date range
             date = dateRange(row.date);
-        }
-        else {
+        } else {
             // Unrecognized
             date = row.date;
         }
@@ -231,7 +228,7 @@ function parseResponse(res) {
         tr.appendChild(td);
         // Add event name
         td = document.createElement('td');
-        text = document.createTextNode(row.event);
+        text = document.createTextNode(row.evnt);
         td.appendChild(text);
         tr.appendChild(td);
         // Add hours
@@ -274,7 +271,9 @@ function search() {
             return;
         }
         return res.json();
-    }).then((data) => {
+    }).then((data = {
+        stat: 99
+    }) => {
         // Clear 'Checking' indicators
         for (let e of outs)
             e.value = '';
@@ -308,29 +307,28 @@ function time() {
             errCon();
             return;
         }
-        // Show data
-        // suc(`Data Fetched at ${req.responseText}`);
-        res.text().then((text) => {
-            suc(str['testres'] + text);
-            for (let e of ins) {
-                e.disabled = false;
-            }
-            submit.disabled = false;
-            // Click event
-            submit.addEventListener('click', (e) => {
+        return res.text();
+    }).then((text) => {
+        if (text === undefined || text === null)
+            return;
+        suc(str['testres'] + text);
+        for (let e of ins)
+            e.disabled = false;
+        submit.disabled = false;
+        // Click event
+        submit.addEventListener('click', (e) => {
+            e.preventDefault();
+            search();
+        });
+        // Enter key event
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 search();
-            });
-            // Enter key event
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    search();
-                }
-            });
-            // Focus on first input
-            byId('fname').focus();
+            }
         });
+        // Focus on first input
+        byId('fname').focus();
     }).catch(errCon);
 }
 /**
