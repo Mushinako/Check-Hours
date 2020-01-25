@@ -157,10 +157,12 @@ function excelDate(date) {
     if (date > 60) {
         // After 1900/02/29
         sub = 25568;
-    } else if (date > 0 && date < 60) {
+    }
+    else if (date > 0 && date < 60) {
         // Before 1900/02/29
         sub = 25567;
-    } else {
+    }
+    else {
         // Invalid date
         return date.toString();
     }
@@ -212,16 +214,15 @@ function parseResponse(res) {
         let tr = document.createElement('tr');
         // Add date
         let date;
-        if (typeof row.date === 'number') {
-            // Number date
+        // Number date
+        if (typeof row.date === 'number')
             date = excelDate(row.date);
-        } else if (dateRegex.test(row.date)) {
-            // Date range
+        // Date range
+        else if (dateRegex.test(row.date))
             date = dateRange(row.date);
-        } else {
-            // Unrecognized
+        // Unrecognized
+        else
             date = row.date;
-        }
         let td = document.createElement('td');
         let text = document.createTextNode(date);
         td.appendChild(text);
@@ -271,9 +272,7 @@ function search() {
             return;
         }
         return res.json();
-    }).then((data = {
-        stat: 99
-    }) => {
+    }).then((data = { stat: 99 }) => {
         // Clear 'Checking' indicators
         for (let e of outs)
             e.value = '';

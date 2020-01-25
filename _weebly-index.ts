@@ -251,16 +251,12 @@ function parseResponse(res: resObj): void {
         let tr: HTMLTableRowElement = document.createElement('tr');
         // Add date
         let date: string;
-        if (typeof row.date === 'number') {
-            // Number date
-            date = excelDate(row.date);
-        } else if (dateRegex.test(row.date)) {
-            // Date range
-            date = dateRange(row.date);
-        } else {
-            // Unrecognized
-            date = row.date;
-        }
+        // Number date
+        if (typeof row.date === 'number') date = excelDate(row.date);
+        // Date range
+        else if (dateRegex.test(row.date)) date = dateRange(row.date);
+        // Unrecognized
+        else date = row.date;
         let td: HTMLTableCellElement = document.createElement('td');
         let text: Text = document.createTextNode(date);
         td.appendChild(text);
