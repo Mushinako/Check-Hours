@@ -1,12 +1,9 @@
 "use strict";
 
-// Load function type
-type loadFunc = (req: Response) => void;
-
 // Response table type
 type resTbl = {
     date: number | string,
-    event: string,
+    evnt: string,
     serv: number | null,
     lead: number | null,
     fell: number | null
@@ -15,10 +12,10 @@ type resTbl = {
 // Response object type
 type resObj = {
     stat: number,
-    serv: number,
-    lead: number,
-    fell: number,
-    data: resTbl[]
+    serv?: number,
+    lead?: number,
+    fell?: number,
+    data?: resTbl[]
 };
 
 // Dictionary type
@@ -27,23 +24,24 @@ type dict = Record<string, string>;
 // Strings
 const str: dict = {
     timeout: 'Connection failure! Please retry in a few moments...',
-    testres: 'Ready for query',
+    testres: 'Data updated at ',
     malfunc: 'Webpage malfunction! Reloading...',
     invinpt: 'Invalid input!',
     invstid: 'You may have mistyped your student ID. Please double check.',
     success: 'Success',
-    loading: 'Searching data...',
+    loading: 'Searching data, please wait...',
     checkin: 'Checking...',
     notfond: 'Name-ID combination not found!',
     reqerrr: 'Request error!',
     updatin: 'Server is updating data. Please retry in a few moments...',
     interrr: 'Internal error!',
-    testing: 'Looking for server...'
+    testing: 'Looking for server, please wait...'
 };
 
-// Initialize IP variable
+// Initialize IP variables
 var ip: string;
 const ipUrl: string = 'https://mushinako.github.io/Check-Hours/ip.txt';
+var phpUrl: string;
 
 // Date regexes
 const dateRegex: RegExp = /^\d{1,2}\/\d{1,2}\/\d{2,4}\s*\-\s*\d{1,2}\/\d{1,2}\/\d{2,4}$/;
@@ -66,6 +64,7 @@ const inputsFromIds = (ids: string[]): HTMLInputElement[] => ids.map((id: string
 const tblDiv: HTMLDivElement = <HTMLDivElement>byId('data');
 const form: HTMLFormElement = <HTMLFormElement>byId('input');
 const submit: HTMLButtonElement = <HTMLButtonElement>byId('submit');
+const stat: HTMLInputElement = <HTMLInputElement>byId('stat');
 const ins: HTMLInputElement[] = inputsFromIds(['fname', 'lname', 'id', 'pass']);
 const outs: HTMLInputElement[] = inputsFromIds(['serv', 'lead', 'fell']);
 
@@ -137,7 +136,6 @@ const postFetch = (url: string, data: dict): Promise<Response> => fetch(url, {
  * @param {string} color - Color to change to
  **/
 function putInStat(text: string, color: string): void {
-    let stat: HTMLInputElement = <HTMLInputElement>byId('stat');
     stat.style.color = color;
     stat.value = text;
 }
@@ -155,8 +153,7 @@ function checkForm(): boolean {
         return false;
     }
     // Focus on all inputs for better input error texts
-    for (let e of ins)
-        e.focus();
+    for (let e of ins) e.focus();
     // Prompt for invalid input
     if (!form.checkValidity()) {
         err(str['invinpt']);
@@ -180,7 +177,7 @@ function checkForm(): boolean {
  **/
 function submitData(fn: string): Promise<Response> {
     // Get an object with input ID's as keys and input values as values
-    let data: dict = ins.reduce((acc: dict, cur: HTMLInputElement): dict => {
+    const data: dict = ins.reduce((acc: dict, cur: HTMLInputElement): dict => {
         acc[cur.id] = cur.value.trim().toLowerCase();
         return acc;
     }, {});
@@ -211,17 +208,16 @@ function excelDate(date: number): string {
 }
 
 /**
- * Convert Excel date number to date string
+ * Clean date range string
  *
  * @param   {string} dateRange - Date range
- * @returns {string}           - Date string in mm/dd/yyyy format
+ * @returns {string}           - Date range string in mm/dd/yyyy format
  **/
 function dateRange(dateRange: string): string {
     let dates: string[] = dateRange.replace(/\s/g, '').split('-');
     let datesFormatted: string[] = dates.map((date: string): string => {
         let dateArr: string[] = date.split('/');
-        if (dateArr.length === 3 && dateArr[2].length === 2)
-            dateArr[2] = `20${dateArr[2]}`;
+        if (dateArr.length === 3 && dateArr[2].length === 2) dateArr[2] = `20${dateArr[2]}`;
         return dateArr.join('/');
     });
     return datesFormatted.join(' - ');
@@ -234,8 +230,7 @@ function dateRange(dateRange: string): string {
  **/
 function parseResponse(res: resObj): void {
     // Fill in numbers
-    for (let e of outs)
-        e.value = numFormat(res[e.id]);
+    for (let e of outs) e.value = numFormat(res[e.id]);
     // Fill in table
     const data: resTbl[] = res.data;
     const tbl: HTMLTableElement = document.createElement('table');
@@ -256,23 +251,19 @@ function parseResponse(res: resObj): void {
         let tr: HTMLTableRowElement = document.createElement('tr');
         // Add date
         let date: string;
-        if (typeof row.date === 'number') {
-            // Number date
-            date = excelDate(row.date);
-        } else if (dateRegex.test(row.date)) {
-            // Date range
-            date = dateRange(row.date);
-        } else {
-            // Unrecognized
-            date = row.date;
-        }
+        // Number date
+        if (typeof row.date === 'number') date = excelDate(row.date);
+        // Date range
+        else if (dateRegex.test(row.date)) date = dateRange(row.date);
+        // Unrecognized
+        else date = row.date;
         let td: HTMLTableCellElement = document.createElement('td');
         let text: Text = document.createTextNode(date);
         td.appendChild(text);
         tr.appendChild(td);
         // Add event name
         td = document.createElement('td');
-        text = document.createTextNode(row.event);
+        text = document.createTextNode(row.evnt);
         td.appendChild(text);
         tr.appendChild(td);
         // Add hours
@@ -309,14 +300,14 @@ function search(): void {
     for (let e of outs)
         e.value = str['checkin'];
     // Post search
-    submitData(`http://${ip}/php/search.php`).then((res: Response): Promise<resObj> => {
+    submitData(`http://${ip}/php/search.php`).then((res: Response): Promise<resObj> | undefined => {
         // Check request success
         if (res.status !== 200) {
             err('Internal Error!');
             return;
         }
         return res.json();
-    }).then((data: resObj): void => {
+    }).then((data: resObj = { stat: 99 }): void => {
         // Clear 'Checking' indicators
         for (let e of outs)
             e.value = '';
@@ -345,18 +336,17 @@ function search(): void {
  * Get time from server, also test connection
  **/
 function time(): void {
-    getFetch(`http://${ip}/php/search.php`).then((res: Response): void => {
+    getFetch(`http://${ip}/php/search.php`).then((res: Response): Promise<string> | undefined => {
         // Check request success
         if (res.status !== 200) {
             errCon();
             return;
         }
-        // Show data
-        // suc(`Data Fetched at ${req.responseText}`);
-        suc(str['testres']);
-        for (let e of ins) {
-            e.disabled = false;
-        }
+        return res.text();
+    }).then((text?: string): void => {
+        if (text === undefined || text === null) return;
+        suc(str['testres'] + text);
+        for (let e of ins) e.disabled = false;
         submit.disabled = false;
         // Click event
         submit.addEventListener('click', (e: MouseEvent): void => {
